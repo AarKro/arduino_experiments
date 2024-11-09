@@ -162,7 +162,7 @@ void checkForGameEnd() {
 
     tone(9, NOTE_C5);
     delay(100);
-    tone(9, NOTE_E5);
+    tone(9, NOTE_F5);
     delay(100);
     tone(9, NOTE_A5);
     delay(300);
@@ -178,6 +178,8 @@ void checkForGameEnd() {
 }
 
 void printGameBoard() {
+  // info: first line of board is printed by the printMoveIndicator function
+
   for (int i = 0; i < 7; i++) {
     Serial.print("| ");
     for (int j = 0; j < 7; j++) {
