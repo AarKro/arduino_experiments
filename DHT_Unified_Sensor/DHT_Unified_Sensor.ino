@@ -10,6 +10,12 @@
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
+#include "ArduinoGraphics.h"
+#include "Arduino_LED_Matrix.h"
+
+ArduinoLEDMatrix matrix;
+
+int wert, schnell;
 
 #define DHTPIN 2     // Digital pin connected to the DHT sensor 
 // Feather HUZZAH ESP8266 note: use pins 3, 4, 5, 12, 13 or 14 --
@@ -28,6 +34,8 @@ DHT_Unified dht(DHTPIN, DHTTYPE);
 uint32_t delayMS;
 
 void setup() {
+  matrix.begin();
+  
   Serial.begin(9600);
   // Initialize device.
   dht.begin();
@@ -35,30 +43,22 @@ void setup() {
   // Print temperature sensor details.
   sensor_t sensor;
   dht.temperature().getSensor(&sensor);
-  Serial.println(F("------------------------------------"));
-  Serial.println(F("Temperature Sensor"));
-  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
-  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("°C"));
-  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("°C"));
-  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("°C"));
-  Serial.println(F("------------------------------------"));
+  
   // Print humidity sensor details.
   dht.humidity().getSensor(&sensor);
-  Serial.println(F("Humidity Sensor"));
-  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
-  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
-  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
-  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("%"));
-  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("%"));
-  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
-  Serial.println(F("------------------------------------"));
+  
   // Set delay between sensor readings based on sensor details.
   delayMS = sensor.min_delay / 1000;
+
+  schnell = 50;
 }
 
 void loop() {
+  if (Serial.available()) {
+    wert = Serial.read();
+    schnell = map(wert, 0 ,255, 25, 100);
+  }
+  
   // Delay between measurements.
   delay(delayMS);
   // Get temperature event and print its value.
@@ -71,6 +71,18 @@ void loop() {
     Serial.print(F("Temperature: "));
     Serial.print(event.temperature);
     Serial.println(F("°C"));
+
+    matrix.beginDraw();
+
+    matrix.stroke(0xFFFFFFFF);
+    matrix.textScrollSpeed(50);
+
+    matrix.textFont(Font_5x7);
+    matrix.beginText(0, 1, 0xFFFFFF);
+    matrix.println(event.temperature);
+    matrix.endText(SCROLL_LEFT);
+
+    matrix.endDraw();
   }
   // Get humidity event and print its value.
   dht.humidity().getEvent(&event);
